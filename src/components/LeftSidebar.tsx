@@ -89,7 +89,7 @@ export default function LeftSidebar({
               key={category} 
               className={clsx(
                 "transition-all duration-300 ease-in-out", 
-                !collapsed ? "bg-[#1C1C1E] rounded-[20px] p-2" : "bg-transparent rounded-none p-0 space-y-2"
+                !collapsed ? "bg-[#1C1C1E] rounded-3xl p-2" : "bg-transparent rounded-none p-0 space-y-2"
               )}
             >
               <AnimatePresence mode="wait">
@@ -138,7 +138,7 @@ export default function LeftSidebar({
                           "flex items-center transition-all duration-200 group relative",
                           collapsed 
                             ? "justify-center w-10 h-10 rounded-full hover:bg-white/10" 
-                            : "w-full gap-4 px-3 py-3 text-sm text-left rounded-xl",
+                            : "w-full gap-4 px-3 py-3 text-sm text-left rounded-2xl",
                           !collapsed && activeThemeId === theme.id
                             ? "bg-white/10 text-white"
                             : !collapsed && "text-gray-400 hover:bg-white/5 hover:text-gray-200"

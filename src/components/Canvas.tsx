@@ -206,7 +206,7 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
         <div className="flex items-center gap-6">
           <div className="bg-[#1A1A1A] rounded-full pl-6 pr-2 py-2 flex items-center gap-6 border border-white/5 shadow-lg">
             <div>
-              <h2 className="text-base font-bold text-white tracking-wide leading-none">
+              <h2 className="text-sm font-bold text-white tracking-wide leading-none">
                 {theme.name}
               </h2>
               <div className="flex items-center gap-2 mt-1.5">

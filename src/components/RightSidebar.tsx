@@ -45,7 +45,7 @@ export default function RightSidebar({
       {/* Preview Card */}
       <div className="p-6 pb-4">
         <div
-          className="w-full aspect-[3/4] rounded-2xl relative overflow-hidden shadow-2xl mb-4"
+          className="w-full aspect-[3/4] rounded-3xl relative overflow-hidden shadow-2xl mb-4"
           style={{ backgroundColor: theme.backgroundColor }}
         >
           {theme.layers
@@ -100,40 +100,46 @@ export default function RightSidebar({
             环境设置 / Atmosphere
           </div>
 
-          <div className="bg-[#1A1A1A] rounded-xl p-4 flex items-center gap-4 border border-white/5">
-            <div className="w-10 h-10 rounded-full border border-white/10 overflow-hidden relative">
-              <input
-                type="color"
-                value={theme.backgroundColor}
-                onChange={(e) => handleUpdateBgColor(e.target.value)}
-                className="absolute inset-[-10px] w-[60px] h-[60px] cursor-pointer"
-              />
+          <div className="bg-[#1A1A1A] rounded-2xl p-4 flex items-center justify-between border border-white/5">
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-white">背景颜色</span>
+              <span className="text-xs text-gray-500">Background</span>
             </div>
-            <div>
-              <div className="text-sm font-medium text-gray-300">背景颜色</div>
-              <div className="text-xs text-gray-500 font-mono mt-0.5 uppercase">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-mono text-gray-500 uppercase">
                 {theme.backgroundColor}
+              </span>
+              <div className="relative group">
+                <div
+                  className="w-8 h-8 rounded-full border border-white/10 shadow-inner cursor-pointer"
+                  style={{ backgroundColor: theme.backgroundColor }}
+                />
+                <input
+                  type="color"
+                  value={theme.backgroundColor}
+                  onChange={(e) => handleUpdateBgColor(e.target.value)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
               </div>
             </div>
           </div>
 
-          <div className="bg-[#1A1A1A] rounded-xl p-4 border border-white/5 space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-300">
-                噪点强度
-              </span>
-              <span className="text-xs font-mono text-gray-500">
-                {theme.noise}%
-              </span>
+          <div className="bg-[#1A1A1A] rounded-2xl p-4 flex items-center gap-4 border border-white/5">
+            <div className="flex flex-col gap-1 flex-1">
+              <span className="text-sm font-medium text-white">噪点强度</span>
+              <span className="text-xs text-gray-500">Noise Intensity</span>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={theme.noise}
-              onChange={(e) => handleUpdateNoise(parseInt(e.target.value))}
-              className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-white"
-            />
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-mono text-gray-500">{theme.noise}%</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={theme.noise}
+                onChange={(e) => handleUpdateNoise(parseInt(e.target.value))}
+                className="w-24 h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-white"
+              />
+            </div>
           </div>
         </div>
 
@@ -141,17 +147,17 @@ export default function RightSidebar({
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-xs font-medium text-gray-500 tracking-wider uppercase">
             <Layers size={14} />
-            图层列表 / Layers
+            图层 / Layers
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {theme.layers.map((layer) => (
               <LayerPanel
                 key={layer.id}
                 layer={layer}
                 onUpdate={(updates) => handleUpdateLayer(layer.id, updates)}
                 isSelected={selectedLayerId === layer.id}
-                onSelect={() => onSelectLayer(layer.id)}
+                onSelect={(id) => onSelectLayer(id)}
               />
             ))}
           </div>
@@ -161,48 +167,66 @@ export default function RightSidebar({
   );
 }
 
-function LayerPanel({
-  layer,
-  onUpdate,
-  isSelected,
-  onSelect,
-}: {
-  key?: React.Key;
+interface LayerPanelProps {
   layer: Layer;
+  isSelected: boolean;
+  onSelect: (id: string | null) => void;
   onUpdate: (updates: Partial<Layer>) => void;
-  isSelected?: boolean;
-  onSelect?: () => void;
-}) {
+}
+
+function LayerPanel({ layer, isSelected, onSelect, onUpdate }: LayerPanelProps) {
+  const [expanded, setExpanded] = React.useState(false);
+
   return (
-    <div 
-        className={`rounded-xl border overflow-hidden transition-all duration-200 ${
-            isSelected 
-            ? "bg-[#252525] border-blue-500/50 ring-1 ring-blue-500/50" 
-            : "bg-[#1A1A1A] border-white/5 hover:border-white/10"
-        }`}
-        onClick={onSelect}
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        if (isSelected) {
+            onSelect(null);
+        } else {
+            onSelect(layer.id);
+        }
+      }}
+      className={clsx(
+        "rounded-2xl border transition-all duration-200 overflow-hidden",
+        isSelected
+          ? "bg-[#1C1C1E] border-white/20 shadow-lg"
+          : "bg-[#1A1A1A] border-white/5 hover:border-white/10"
+      )}
     >
-      {/* Header */}
-      <div className="p-4 flex items-center justify-between border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-4 h-4 rounded-full shadow-sm"
-            style={{
-              background:
-                layer.type === "gradient"
-                  ? `linear-gradient(135deg, ${layer.colors[0]}, ${layer.colors[1]})`
-                  : layer.colors[0],
-            }}
-          />
-          <span className="text-sm font-medium text-gray-200">
-            {layer.name}
-          </span>
-        </div>
+      <div className="flex items-center gap-4 p-4">
         <button
-          onClick={() => onUpdate({ visible: !layer.visible })}
-          className="text-gray-500 hover:text-white transition-colors p-1 rounded-md hover:bg-white/10"
+          onClick={(e) => {
+            e.stopPropagation();
+            onUpdate({ visible: !layer.visible });
+          }}
+          className={clsx(
+            "p-2 rounded-xl transition-colors",
+            layer.visible ? "text-gray-400 hover:text-white hover:bg-white/10" : "text-gray-600 bg-black/20"
+          )}
         >
-          {layer.visible ? <Eye size={16} /> : <EyeOff size={16} />}
+          {layer.visible ? <Eye size={18} /> : <EyeOff size={18} />}
+        </button>
+
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <div className="flex items-center gap-2">
+            <span className="text-base font-medium text-white/90 truncate tracking-tight">
+              {layer.name}
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(!expanded);
+          }}
+          className={clsx(
+            "p-2 rounded-xl transition-colors text-gray-400 hover:text-white hover:bg-white/10",
+            expanded && "bg-white/10 text-white"
+          )}
+        >
+          <SlidersHorizontal size={18} />
         </button>
       </div>
 
