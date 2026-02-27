@@ -52,7 +52,7 @@ export default function RightSidebar({
             .filter((l) => l.visible)
             .map((layer) => (
               <div
-                key={layer.id}
+                key={`${theme.id}-${layer.id}`}
                 className="absolute pointer-events-none"
                 style={{
                   width: layer.width,
@@ -153,7 +153,7 @@ export default function RightSidebar({
           <div className="space-y-2">
             {theme.layers.map((layer) => (
               <LayerPanel
-                key={layer.id}
+                key={`${theme.id}-${layer.id}`}
                 layer={layer}
                 onUpdate={(updates) => handleUpdateLayer(layer.id, updates)}
                 isSelected={selectedLayerId === layer.id}
@@ -168,6 +168,7 @@ export default function RightSidebar({
 }
 
 interface LayerPanelProps {
+  key?: React.Key;
   layer: Layer;
   isSelected: boolean;
   onSelect: (id: string | null) => void;

@@ -132,10 +132,11 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
       // 1. New Base Shape (Prevent infinite distortion degradation)
       // Reset to a basic shape based on randomized dimensions
       // This ensures we always start from a "clean" geometry before distorting
-      const newWidth = Math.floor(Math.random() * 80) + 40; // 40% - 120%
-      const newHeight = Math.floor(Math.random() * 80) + 40; // 40% - 120%
-      const newLeft = Math.floor(Math.random() * 80) - 20; // -20% to 60%
-      const newTop = Math.floor(Math.random() * 80) - 20; // -20% to 60%
+      // Larger shapes for better blending coverage
+      const newWidth = Math.floor(Math.random() * 80) + 50; // 50% - 130%
+      const newHeight = Math.floor(Math.random() * 80) + 50; // 50% - 130%
+      const newLeft = Math.floor(Math.random() * 80) - 30; // -30% to 50%
+      const newTop = Math.floor(Math.random() * 80) - 30; // -30% to 50%
       const newRotation = Math.floor(Math.random() * 360); // 0-360 full rotation
 
       // Create a temporary layer config to generate a fresh path
@@ -161,22 +162,16 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
       const distortionIntensity = Math.floor(Math.random() * 12) + 4; // 4 to 16
       newPath = distortPath(newPath, distortionIntensity);
 
-      // 4. Color Variation (Very Subtle)
-      // Minimal hue rotation to keep color identity, just slight variation for freshness
-      const hueShift = Math.floor(Math.random() * 10) - 5; // -5 to +5 degrees hue shift (was +/- 30)
-      const newColors = layer.colors.map(c => {
-        const hsl = hexToHSL(c);
-        hsl.h = (hsl.h + hueShift + 360) % 360; 
-        // Very subtle saturation/lightness tweaks
-        hsl.s = Math.max(20, Math.min(100, hsl.s + (Math.random() * 6 - 3))); // +/- 3%
-        hsl.l = Math.max(20, Math.min(90, hsl.l + (Math.random() * 6 - 3))); // +/- 3%
-        return hslToHex(hsl);
-      });
+      // 4. Color Variation: STRICTLY PRESERVED
+      // We do NOT modify colors anymore to ensure the palette stays clean and true to the theme.
+      // The user wants to see different compositions of the SAME colors, not different colors.
+      const newColors = [...layer.colors];
 
-      // 5. Opacity & Blur Variation (Subtle)
-      // Absolute randomization instead of cumulative
-      const newOpacity = Math.floor(Math.random() * 50) + 40; // 40% - 90%
-      const newBlur = Math.floor(Math.random() * 100) + 40; // 40px - 140px
+      // 5. Opacity & Blur Variation (Enhanced Transparency)
+      // Lower opacity to allow more blending between layers (avoid "solid" look)
+      // High blur to create smooth, ethereal transitions
+      const newOpacity = Math.floor(Math.random() * 40) + 40; // 40% - 80% (Lower cap to prevent covering other layers too much)
+      const newBlur = Math.floor(Math.random() * 80) + 80; // 80px - 160px (Very high blur for "misty" look)
 
       return {
         ...layer,
