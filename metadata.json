@@ -1,0 +1,5 @@
+{
+  "name": "BinGrad Gradient Generator",
+  "description": "A fluid gradient generator tool with layer management, noise, and export capabilities.",
+  "requestFramePermissions": []
+}
