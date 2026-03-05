@@ -1,7 +1,9 @@
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import { Theme, Layer } from "../types";
-import { Undo2, Redo2, RefreshCw, Download, Anchor } from "lucide-react";
+import { Undo2, Redo2, RefreshCw, Download, Anchor, ChevronDown, Check } from "lucide-react";
 import { toPng } from "html-to-image";
+import { motion, AnimatePresence } from "motion/react";
+import { clsx } from "clsx";
 import { ensureLayerPath, generatePathString, movePath, rotatePath, distortPath } from "../utils/path";
 import { hexToHSL, hslToHex } from "../utils/colors";
 import LayerEditor from "./LayerEditor";
@@ -59,6 +61,33 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
   const containerRef = useRef<HTMLDivElement>(null);
   const [showAnchors, setShowAnchors] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [canvasAspect, setCanvasAspect] = useState<"16:9" | "9:16" | "1:1" | "4:3" | "3:4">("16:9");
+  const [isAspectOpen, setIsAspectOpen] = useState(false);
+  const aspectDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (aspectDropdownRef.current && !aspectDropdownRef.current.contains(event.target as Node)) {
+        setIsAspectOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const targetRatio = useMemo(() => {
+    const ratios: Record<typeof canvasAspect, number> = {
+      "16:9": 16 / 9,
+      "9:16": 9 / 16,
+      "1:1": 1,
+      "4:3": 4 / 3,
+      "3:4": 3 / 4,
+    };
+    return ratios[canvasAspect];
+  }, [canvasAspect]);
 
   React.useEffect(() => {
     if (!containerRef.current) return;
@@ -67,19 +96,26 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
       if (!containerRef.current) return;
       const { clientWidth, clientHeight } = containerRef.current;
       
-      // Target aspect ratio 16:9
-      const targetRatio = 16 / 9;
-      const containerRatio = clientWidth / clientHeight;
+      // Calculate available space accounting for padding (p-8 = 32px)
+      // Horizontal padding: 32px left + 32px right = 64px
+      // Vertical padding: 32px top + 32px bottom = 64px
+      const paddingX = 64;
+      const paddingY = 64;
+      
+      const availableWidth = clientWidth - paddingX;
+      const availableHeight = clientHeight - paddingY;
+      
+      const containerRatio = availableWidth / availableHeight;
 
       let width, height;
 
       if (containerRatio > targetRatio) {
         // Container is wider than target
-        height = clientHeight;
+        height = availableHeight;
         width = height * targetRatio;
       } else {
         // Container is taller than target
-        width = clientWidth;
+        width = availableWidth;
         height = width / targetRatio;
       }
 
@@ -93,7 +129,7 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
     updateDimensions();
 
     return () => observer.disconnect();
-  }, []);
+  }, [targetRatio]);
 
   // Ensure all layers have path data
   const processedLayers = useMemo<Layer[]>(() => {
@@ -249,6 +285,57 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
             <RefreshCw size={18} />
           </button>
 
+          <div ref={aspectDropdownRef} className="relative z-50">
+            <button
+              onClick={() => setIsAspectOpen(!isAspectOpen)}
+              className={clsx(
+                "h-10 flex items-center gap-2 rounded-full border transition-all duration-200 px-4",
+                isAspectOpen 
+                  ? "bg-white text-black border-white" 
+                  : "bg-[#1A1A1A] text-white border-white/5 hover:bg-white/10"
+              )}
+            >
+              <span className="text-sm font-medium whitespace-nowrap opacity-60">比例</span>
+              <div className={clsx("w-px h-3 mx-0.5", isAspectOpen ? "bg-black/20" : "bg-white/20")} />
+              <span className="text-sm font-bold min-w-[2rem] text-left">{canvasAspect}</span>
+              <ChevronDown 
+                size={14} 
+                className={clsx("transition-transform duration-200 opacity-60", isAspectOpen && "rotate-180")} 
+              />
+            </button>
+
+            <AnimatePresence>
+              {isAspectOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-32 bg-[#1A1A1A] border border-white/10 rounded-xl shadow-xl overflow-hidden p-1 flex flex-col gap-0.5"
+                >
+                  {["16:9", "9:16", "1:1", "4:3", "3:4"].map((ratio) => (
+                    <button
+                      key={ratio}
+                      onClick={() => {
+                        setCanvasAspect(ratio as any);
+                        setIsAspectOpen(false);
+                      }}
+                      className={clsx(
+                        "flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                        canvasAspect === ratio
+                          ? "bg-white text-black"
+                          : "text-gray-400 hover:text-white hover:bg-white/5"
+                      )}
+                    >
+                      {ratio}
+                      {canvasAspect === ratio && <Check size={14} />}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <button
             onClick={() => {
                 setShowAnchors(!showAnchors);
@@ -275,7 +362,7 @@ export default function Canvas({ theme, onUpdateTheme, onUndo, onRedo, canUndo, 
       {/* Canvas Area */}
       <div 
         ref={containerRef}
-        className="flex-1 p-8 pt-0 overflow-hidden flex items-center justify-center w-full"
+        className="flex-1 p-8 overflow-hidden flex items-center justify-center w-full"
       >
         <div 
           className="relative shadow-2xl rounded-[32px] overflow-hidden transition-all duration-300 ease-out"
