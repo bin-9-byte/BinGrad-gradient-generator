@@ -1,5 +1,17 @@
 {
   "name": "BinGrad Gradient Generator",
-  "description": "A fluid gradient generator tool with layer management, noise, and export capabilities.",
+  "description": "基于 React 的多图层流体渐变设计工具，支持自定义形状与噪点质感。",
+  "longDescription": "BinGrad 是一款强大的渐变生成器，助你轻松创作极具质感的流体背景。主要功能包括：\n1. **多图层叠加**：支持混合模式（Screen, Overlay 等）、透明度与模糊调节。\n2. **自由塑形**：直接在画板上拖拽节点，创造独一无二的有机形态。\n3. **噪点质感**：一键添加颗粒感，提升视觉层次。\n4. **多比例适配**：支持 16:9, 1:1 等多种画板比例。\n5. **高清导出**：即时生成并下载 PNG 图片。",
+  "platform": "Web",
+  "tags": [
+    "Gradient Generator",
+    "Design Tool",
+    "React",
+    "Vite",
+    "Creative Coding",
+    "Canvas",
+    "Tailwind CSS",
+    "Web App"
+  ],
   "requestFramePermissions": []
 }
